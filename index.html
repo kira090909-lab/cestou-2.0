@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Inscrição - Torneio de Basquete 3x3</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: url('https://www.transparenttextures.com/patterns/purple-bliss.png') no-repeat center center fixed;
+      background-size: cover;
+      background-color: #1a0d1d;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      color: #ff8c1a;
+    }
+    .container {
+      background: #2c2c54;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.3);
+      max-width: 500px;
+      width: 90%;
+      margin-top: 2rem;
+    }
+    .logo {
+      text-align: center;
+      margin-top: 2rem;
+    }
+    .logo img {
+      max-width: 300px;
+      height: auto;
+    }
+    label {
+      display: block;
+      margin: 0.5rem 0 0.2rem;
+      color: #fff;
+    }
+    input, .submit-btn, .confirm-btn {
+      width: 100%;
+      padding: 0.5rem;
+      background-color: #f5e7d3;
+      border: none;
+      border-radius: 6px;
+      margin-top: 0.5rem;
+    }
+    .submit-btn, .confirm-btn {
+      background-color: #ff6600;
+      color: white;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    .submit-btn:hover, .confirm-btn:hover {
+      background-color: #e65c00;
+    }
+    .players {
+      margin-top: 1rem;
+    }
+    .message {
+      margin-top: 1rem;
+      font-weight: bold;
+      text-align: center;
+    }
+    .admin-panel {
+      margin-top: 2rem;
+      background: #2c2c54;
+      padding: 1rem;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+      max-width: 600px;
+      width: 90%;
+    }
+    .admin-panel h2 {
+      text-align: center;
+      color: #ff8c1a;
+    }
+    .team-list {
+      margin-top: 1rem;
+    }
+    .team-item {
+      border-bottom: 1px solid #ddd;
+      padding: 0.5rem 0;
+      color: #fff;
+    }
+    .banner {
+      margin-top: 2rem;
+      width: 90%;
+      max-width: 800px;
+    }
+    .banner img {
+      width: 100%;
+      border-radius: 12px;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="logo">
+    <img src="IMG-20250514-WA0045.jpg" alt="Logo Cestou 3x3" />
+  </div>
+
+  <div class="container">
+    <form id="formEquipe">
+      <div id="etapa1">
+        <label for="nomeEquipe">Nome da Equipe:</label>
+        <input type="text" id="nomeEquipe" name="nomeEquipe" required />
+
+        <label for="capitao">Nome do Capitão:</label>
+        <input type="text" id="capitao" name="capitao" required />
+
+        <div class="players">
+          <label>Jogadores (até 4):</label>
+          <input type="text" name="jogador1" placeholder="Jogador 1" required />
+          <input type="text" name="jogador2" placeholder="Jogador 2" required />
+          <input type="text" name="jogador3" placeholder="Jogador 3" required />
+          <input type="text" name="jogador4" placeholder="Jogador 4 (opcional)" />
+        </div>
+
+        <button type="button" class="submit-btn" onclick="mostrarPagamento()">Continuar</button>
+      </div>
+
+      <div id="etapa2" class="hidden">
+        <h3 style="color:white; text-align:center;">Pagamento via Pix</h3>
+        <p style="color:white; text-align:center;">Escaneie o QR Code abaixo e faça o pagamento de <strong>R$5,00</strong></p>
+        <img src="IMG-20250517-WA0035.jpg" alt="QR Code Pix" style="display:block;margin:auto;" />
+        <button type="button" class="confirm-btn" onclick="mostrarComprovante()">Já paguei</button>
+      </div>
+
+      <div id="etapa3" class="hidden">
+        <label for="comprovante">Anexe o comprovante de pagamento (imagem ou PDF):</label>
+        <input type="file" id="comprovante" name="comprovante" accept=".jpg,.jpeg,.png,.pdf" required />
+        <button type="submit" class="submit-btn">Finalizar Inscrição</button>
+      </div>
+
+      <div class="message" id="mensagem"></div>
+    </form>
+  </div>
+
+  <div class="admin-panel">
+    <h2>Equipes Registradas</h2>
+    <div class="team-list" id="listaEquipes"></div>
+  </div>
+
+  <div class="banner">
+    <img src="IMG-20250507-WA0020.jpg" alt="Banner do Evento" />
+  </div>
+
+  <script>
+    const form = document.getElementById('formEquipe');
+    const mensagem = document.getElementById('mensagem');
+    const listaEquipes = document.getElementById('listaEquipes');
+    const etapa1 = document.getElementById('etapa1');
+    const etapa2 = document.getElementById('etapa2');
+    const etapa3 = document.getElementById('etapa3');
+    const equipesCadastradas = [];
+
+    function mostrarPagamento() {
+      const jogadores = [
+        form.jogador1.value.trim(),
+        form.jogador2.value.trim(),
+        form.jogador3.value.trim(),
+        form.jogador4.value.trim()
+      ].filter(nome => nome !== "");
+
+      if (!form.nomeEquipe.value.trim() || !form.capitao.value.trim() || jogadores.length < 3) {
+        mensagem.style.color = 'red';
+        mensagem.textContent = 'Preencha todos os campos obrigatórios e pelo menos 3 jogadores.';
+        return;
+      }
+
+      mensagem.textContent = '';
+      etapa1.classList.add('hidden');
+      etapa2.classList.remove('hidden');
+    }
+
+    function mostrarComprovante() {
+      etapa2.classList.add('hidden');
+      etapa3.classList.remove('hidden');
+    }
+
+    form.addEventListener('submit', function(event) {
+      event.preventDefault();
+
+      const nomeEquipe = form.nomeEquipe.value.trim();
+      const capitao = form.capitao.value.trim();
+      const jogadores = [
+        form.jogador1.value.trim(),
+        form.jogador2.value.trim(),
+        form.jogador3.value.trim(),
+        form.jogador4.value.trim()
+      ].filter(nome => nome !== "");
+      const comprovante = form.comprovante.files[0];
+
+      if (!comprovante) {
+        mensagem.style.color = 'red';
+        mensagem.textContent = 'Anexe o comprovante de pagamento.';
+        return;
+      }
+
+      const equipe = {
+        nome: nomeEquipe,
+        capitao: capitao,
+        jogadores: jogadores
+      };
+
+      equipesCadastradas.push(equipe);
+      atualizarPainel();
+
+      mensagem.style.color = 'green';
+      mensagem.textContent = `Equipe "${nomeEquipe}" inscrita com sucesso!`;
+
+      form.reset();
+      etapa1.classList.remove('hidden');
+      etapa3.classList.add('hidden');
+    });
+
+    function atualizarPainel() {
+      listaEquipes.innerHTML = '';
+      equipesCadastradas.forEach((equipe, index) => {
+        const item = document.createElement('div');
+        item.classList.add('team-item');
+        item.innerHTML = `<strong>${index + 1}. ${equipe.nome}</strong><br />Capitão: ${equipe.capitao}<br />Jogadores: ${equipe.jogadores.join(', ')}`;
+        listaEquipes.appendChild(item);
+      });
+    }
+  </script>
+</body>
+</html>
